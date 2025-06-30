@@ -12,10 +12,8 @@ export function useOrderFilters(uniqueStatuses: string[]) {
     status: "all",
   })
 
-  // Use ref to track if we've initialized from URL params
   const initializedRef = useRef(false)
 
-  // Initialize filters from URL params only once
   useEffect(() => {
     if (initializedRef.current) return
 
@@ -26,9 +24,8 @@ export function useOrderFilters(uniqueStatuses: string[]) {
     }
 
     initializedRef.current = true
-  }, []) // Remove uniqueStatuses and searchParams from dependencies
+  }, [])
 
-  // Handle URL changes after initialization
   useEffect(() => {
     if (!initializedRef.current) return
 
@@ -42,7 +39,6 @@ export function useOrderFilters(uniqueStatuses: string[]) {
         return prev
       })
     } else {
-      // Reset filters when no status parameter
       setFilters((prev) => {
         if (prev.status !== "all" || prev.protocol !== "all" || prev.search !== "") {
           return {

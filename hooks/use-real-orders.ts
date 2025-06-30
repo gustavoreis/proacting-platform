@@ -1,22 +1,27 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { fetchLineItemsByProductIds, fetchOrdersByPractitioner, LineItem } from "@/lib/orders"
+import { fetchOrdersByPractitioner } from "@/lib/orders"
 import { OrderFilters, Order } from "@/types/order"
 import { groupLineItemsByOrder } from "@/lib/adapters"
+import { useAuth } from "@/contexts/AuthContext"
 
-export function useRealOrders(practitionerId?: string) {
+export function useRealOrders() {
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchOrders = useCallback(async () => {
-    if (!practitionerId) return
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
 
     try {
       setLoading(true)
       setError(null)
-      const lineItems = await fetchOrdersByPractitioner(practitionerId)
+      const lineItems = await fetchOrdersByPractitioner(user.id)
       const adaptedOrders = groupLineItemsByOrder(lineItems)
       setOrders(adaptedOrders)
     } catch (err) {
@@ -25,7 +30,7 @@ export function useRealOrders(practitionerId?: string) {
     } finally {
       setLoading(false)
     }
-  }, [practitionerId])
+  }, [user?.id])
 
   useEffect(() => {
     fetchOrders()

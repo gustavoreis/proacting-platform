@@ -62,7 +62,6 @@ export function useRealProtocols(loginUserId?: string) {
     fetchProtocols()
   }, [fetchProtocols])
 
-  // Estatísticas dos protocolos
   const getProtocolStats = useCallback(() => {
     const total = protocols.length
     const active = protocols.filter(p => p.status === "active").length

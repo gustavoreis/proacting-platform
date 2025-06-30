@@ -160,31 +160,36 @@ export async function getLineItemById(lineItemId: string): Promise<LineItem[] | 
 }
 
 // Função auxiliar para buscar todos os pedidos de um practitioner
-export async function fetchOrdersByPractitioner(practitionerId: string): Promise<LineItem[]> {
-  // Primeiro buscar os tracks do practitioner para obter os productIds
-  const { data: tracks, error: tracksError } = await supabase
-    .from("tracks") // Assumindo que existe uma tabela tracks
-    .select("shopify_product_id")
-    .eq("practitioner_id", practitionerId);
+export async function fetchOrdersByPractitioner(loginUserId: string): Promise<LineItem[]> {
+  try {
+    // Importar dinamicamente para evitar erro de ciclo
+    const { fetchTrackData } = await import("./sanity");
+    
+    // Primeiro buscar os tracks do practitioner no Sanity usando loginUserId
+    const tracks = await fetchTrackData(loginUserId);
+    
+    if (!tracks || tracks.length === 0) {
+      console.log("Nenhuma track encontrada para o usuário:", loginUserId);
+      return [];
+    }
 
-  if (tracksError) {
-    console.error("Erro ao buscar tracks:", tracksError);
+    // Extrair os shopifyProductIds das tracks
+    const productIds = tracks
+      .filter(track => track.shopifyProductId)
+      .map(track => track.shopifyProductId)
+      .filter((id): id is number => id !== undefined);
+
+    if (productIds.length === 0) {
+      console.log("Nenhum shopifyProductId encontrado nas tracks");
+      return [];
+    }
+
+    console.log("ProductIds encontrados:", productIds);
+    return fetchLineItemsByProductIds(productIds);
+  } catch (error) {
+    console.error("Erro ao buscar pedidos por profissional:", error);
     return [];
   }
-
-  if (!tracks || tracks.length === 0) {
-    return [];
-  }
-
-  const productIds = tracks
-    .filter(track => track.shopify_product_id)
-    .map(track => track.shopify_product_id);
-
-  if (productIds.length === 0) {
-    return [];
-  }
-
-  return fetchLineItemsByProductIds(productIds);
 }
 
 // Tipos atualizados para compatibilidade com o sistema existente
