@@ -3,7 +3,7 @@
 import * as React from "react"
 import { type LucideIcon, User, Settings, ChevronRight, X, Save, Loader2 } from "lucide-react"
 
-import { Dialog, DialogContent, DialogHeader, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -267,19 +267,18 @@ export function NavProjects({
         <SidebarMenu>
           {projects.map((item) => (
             <SidebarMenuItem key={item.name}>
-              <SidebarMenuButton
-                asChild={item.url !== "settings-modal"} // Only use asChild if not opening modal
-                onClick={() => handleItemClick(item.url)}
-                className={item.url === "settings-modal" ? "cursor-pointer" : ""}
-              >
-                {item.url === "settings-modal" ? (
-                  // Render as a button if it opens the modal
-                  <button className="flex w-full items-center gap-2">
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </button>
-                ) : (
-                  // Render as an anchor tag for external links
+              {item.url === "settings-modal" ? (
+                // Render as SidebarMenuButton for modal trigger
+                <SidebarMenuButton
+                  onClick={() => handleItemClick(item.url)}
+                  className="cursor-pointer"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </SidebarMenuButton>
+              ) : (
+                // Render as SidebarMenuButton with asChild for external links
+                <SidebarMenuButton asChild>
                   <a
                     href={item.url}
                     target={item.target}
@@ -288,8 +287,8 @@ export function NavProjects({
                     <item.icon className="h-4 w-4" />
                     <span>{item.name}</span>
                   </a>
-                )}
-              </SidebarMenuButton>
+                </SidebarMenuButton>
+              )}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -318,6 +317,9 @@ export function NavProjects({
           {/* Right Content Area in Modal */}
           <div className="w-2/3 flex flex-col overflow-hidden">
             <DialogHeader className="p-4 border-b bg-background">
+              <DialogTitle className="sr-only">
+                Configurações - {activeSection.label}
+              </DialogTitle>
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                   <span>Settings</span>
