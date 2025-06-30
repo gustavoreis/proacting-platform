@@ -12,8 +12,6 @@ interface UpdatePractitionerData {
 
 export async function updatePractitionerAction(data: UpdatePractitionerData) {
   try {
-    console.log("🔧 Server Action - Atualizando practitioner:", data)
-    
     const { _id, ...updatedFields } = data
     
     await updatePractitioner(_id, {
@@ -25,7 +23,7 @@ export async function updatePractitionerAction(data: UpdatePractitionerData) {
 
     return { success: true }
   } catch (error) {
-    console.error("❌ Server Action Error:", error)
+    console.error("Server Action Error:", error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : "Erro desconhecido" 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { fetchPractitionerByLoginUserId, type PractitionerType } from "@/lib/sanity"
-import { updatePractitionerAction } from "@/app/actions/update-practitioner"
+import { updatePractitionerAction } from "@/app/actions"
 import { useAuth } from "@/contexts/AuthContext"
 
 export interface PractitionerFormData {
