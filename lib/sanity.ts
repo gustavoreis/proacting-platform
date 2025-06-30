@@ -5,9 +5,9 @@ const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION,
-  token: process.env.SANITY_TOKEN,
+  token: process.env.SANITY_TOKEN || process.env.NEXT_PUBLIC_SANITY_TOKEN,
   useCdn: false,
-  perspective: "published",
+  perspective: "published", 
 });
 
 export type TrackType = {
@@ -57,7 +57,7 @@ export type TrackType = {
   description?: string;
   previewImageUrl: string;
   practitioner: PractitionerType;
-  shopifyProductId?: number;
+  shopifyProductId?: number | string;
   status: string;
   _createdAt: string;
 };
@@ -171,6 +171,8 @@ export const fetchPractitionerByLoginUserId = async (
   return client.fetch(query);
 };
 
+
+
 export const updatePractitioner = async (
   id: string,
   updatedFields: {
@@ -183,11 +185,8 @@ export const updatePractitioner = async (
   try {
     await client.patch(id).set(updatedFields).commit();
   } catch (error) {
-    console.error("Error updatePractitioner:", {
-      id,
-      updatedFields,
-    });
-    console.error("Error updating document (updatePractitioner):", error);
+    console.error("Error updatePractitioner:", error);
+    throw error;
   }
 };
 

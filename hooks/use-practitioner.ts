@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { fetchPractitionerByLoginUserId, updatePractitioner, type PractitionerType } from "@/lib/sanity"
+import { fetchPractitionerByLoginUserId, type PractitionerType } from "@/lib/sanity"
+import { updatePractitionerAction } from "@/app/actions/update-practitioner"
 import { useAuth } from "@/contexts/AuthContext"
 
 export interface PractitionerFormData {
@@ -54,12 +55,17 @@ export function usePractitioner() {
       setUpdating(true)
       setError(null)
       
-      await updatePractitioner(practitioner._id, {
+      const result = await updatePractitionerAction({
+        _id: practitioner._id,
         prefix: updatedFields.prefix ?? practitioner.prefix,
         name: updatedFields.name ?? practitioner.name,
         email: updatedFields.email ?? practitioner.email ?? "",
         bio: updatedFields.bio ?? practitioner.bio,
       })
+
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao atualizar")
+      }
 
       // Atualizar estado local
       setPractitioner(prev => prev ? {

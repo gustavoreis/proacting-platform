@@ -176,8 +176,11 @@ export async function fetchOrdersByPractitioner(loginUserId: string): Promise<Li
     // Extrair os shopifyProductIds das tracks
     const productIds = tracks
       .filter(track => track.shopifyProductId)
-      .map(track => track.shopifyProductId)
-      .filter((id): id is number => id !== undefined);
+      .map(track => {
+        const id = track.shopifyProductId;
+        return typeof id === 'string' ? parseInt(id, 10) : id;
+      })
+      .filter((id): id is number => id !== undefined && !isNaN(id));
 
     if (productIds.length === 0) {
       console.log("Nenhum shopifyProductId encontrado nas tracks");
@@ -185,6 +188,7 @@ export async function fetchOrdersByPractitioner(loginUserId: string): Promise<Li
     }
 
     console.log("ProductIds encontrados:", productIds);
+    console.log("Tracks originais:", tracks.map(t => ({ title: t.title, shopifyProductId: t.shopifyProductId })));
     return fetchLineItemsByProductIds(productIds);
   } catch (error) {
     console.error("Erro ao buscar pedidos por profissional:", error);
