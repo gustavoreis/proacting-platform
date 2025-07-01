@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { ChevronRight, type LucideIcon } from "lucide-react"
-import { Badge } from "@/components/ui/badge" // Import Badge
+import { Badge } from "@/components/ui/badge" 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   SidebarGroup,
@@ -27,24 +27,47 @@ export function NavMain({
       title: string
       url: string
     }[]
-    badgeText?: string // Added badgeText property
+    badgeText?: string
   }[]
 }) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleMouseEnter = useCallback((itemTitle: string) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    setHoveredItem(itemTitle)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    timeoutRef.current = setTimeout(() => {
+      setHoveredItem(null)
+      timeoutRef.current = null
+    }, 100)
+  }, [])
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platforma</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          // If item has badgeText, render as inactive with badge
           if (item.badgeText) {
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   tooltip={item.title}
                   className="opacity-60 cursor-default hover:bg-transparent focus:ring-0 justify-start"
-                  disabled // Make the button non-interactive
+                  disabled
                 >
                   {item.icon && <item.icon />}
                   <span className="flex-grow">{item.title}</span>
@@ -56,7 +79,6 @@ export function NavMain({
             )
           }
 
-          // If item has no subitems (and no badgeText), render as a simple link
           if (!item.items || item.items.length === 0) {
             return (
               <SidebarMenuItem key={item.title}>
@@ -70,7 +92,6 @@ export function NavMain({
             )
           }
 
-          // If item has subitems, render with hover behavior and smooth animations
           const isHovered = hoveredItem === item.title
           
           return (
@@ -81,8 +102,8 @@ export function NavMain({
                 className="group/collapsible"
               >
                 <SidebarMenuItem
-                  onMouseEnter={() => setHoveredItem(item.title)}
-                  onMouseLeave={() => setHoveredItem(null)}
+                  onMouseEnter={() => handleMouseEnter(item.title)}
+                  onMouseLeave={handleMouseLeave}
                   className="transition-all duration-200 ease-in-out"
                 >
                   <CollapsibleTrigger asChild>
@@ -95,9 +116,7 @@ export function NavMain({
                       <a 
                         href={item.url}
                         onClick={(e) => {
-                          // Prevent the collapsible trigger from interfering
                           e.stopPropagation()
-                          // Let the default navigation behavior happen
                         }}
                         className="transition-all duration-200 ease-in-out"
                       >
@@ -107,7 +126,11 @@ export function NavMain({
                       </a>
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="transition-all duration-300 ease-in-out data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
+                  <CollapsibleContent 
+                    className="transition-all duration-300 ease-in-out data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden"
+                    onMouseEnter={() => handleMouseEnter(item.title)}
+                    onMouseLeave={handleMouseLeave}
+                  >
                     <SidebarMenuSub className="transition-all duration-200 ease-in-out">
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title} className="transition-all duration-150 ease-in-out">
