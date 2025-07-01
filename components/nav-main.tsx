@@ -53,7 +53,7 @@ export function NavMain({
     timeoutRef.current = setTimeout(() => {
       setHoveredItem(null)
       timeoutRef.current = null
-    }, 100)
+    }, 1000)
   }, [])
 
   return (
