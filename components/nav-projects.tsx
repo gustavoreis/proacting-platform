@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { type LucideIcon, User, Settings, ChevronRight, X, Save, Loader2 } from "lucide-react"
+import { type LucideIcon, User, Settings, ChevronRight, X, Save, Loader2, Palette } from "lucide-react"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,6 +18,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { usePractitioner } from "@/hooks/use-practitioner"
+import { useTheme } from "@/hooks/use-theme"
 
 // Define the structure for settings sections
 interface SettingsSection {
@@ -120,6 +122,42 @@ function PractitionerProfileSettings() {
         )}
       </Button>
     </form>
+  )
+}
+
+// Component for Theme Settings
+function ThemeSettings() {
+  const { theme, setTheme } = useTheme()
+
+  const handleThemeChange = (value: "dark" | "light" | "system") => {
+    setTheme(value)
+    toast({
+      title: "Tema alterado",
+      description: `Tema alterado para ${value === "system" ? "sistema" : value === "dark" ? "escuro" : "claro"}.`,
+    })
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="theme">Tema da Interface</Label>
+          <Select value={theme} onValueChange={handleThemeChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um tema" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="system">🔄 Sistema (Automático)</SelectItem>
+              <SelectItem value="light">☀️ Modo Claro</SelectItem>
+              <SelectItem value="dark">🌙 Modo Escuro</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground mt-1">
+            Escolha como a interface deve aparecer ou use as configurações do seu sistema.
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -247,6 +285,12 @@ export function NavProjects({
       icon: Settings,
       content: <GeneralSettings />,
     },
+    {
+      id: "theme",
+      label: "Tema",
+      icon: Palette,
+      content: <ThemeSettings />,
+    },
   ]
 
   const handleItemClick = (url: string) => {
@@ -295,7 +339,7 @@ export function NavProjects({
       </SidebarGroup>
 
       <Dialog open={isSettingsModalOpen} onOpenChange={setIsSettingsModalOpen}>
-        <DialogContent className="max-w-4xl h-[70vh] p-0 flex gap-0">
+        <DialogContent className="max-w-4xl h-[70vh] p-0 flex gap-0 [&>button]:hidden">
           {/* Left Sidebar in Modal */}
           <div className="w-1/3 min-w-[280px] bg-muted border-r p-4 flex flex-col">
             <h2 className="text-lg font-semibold px-2 pb-2 mb-2 border-b">Configurações</h2>
