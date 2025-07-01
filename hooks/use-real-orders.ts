@@ -21,8 +21,11 @@ export function useRealOrders() {
     try {
       setLoading(true)
       setError(null)
+      console.log("Buscando orders para usuário:", user.id)
       const lineItems = await fetchOrdersByPractitioner(user.id)
+      console.log("LineItems encontrados:", lineItems.length)
       const adaptedOrders = groupLineItemsByOrder(lineItems)
+      console.log("Orders adaptados:", adaptedOrders.length)
       setOrders(adaptedOrders)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao buscar pedidos")
