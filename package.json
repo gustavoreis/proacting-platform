@@ -40,6 +40,7 @@
     "@sanity/client": "^7.6.0",
     "@supabase/supabase-js": "^2.50.2",
     "@tanstack/react-table": "^8.21.3",
+    "@vercel/og": "^0.6.8",
     "autoprefixer": "^10.4.20",
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
@@ -59,6 +60,7 @@
     "react-phone-number-input": "^3.4.12",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.0",
+    "satori": "^0.15.2",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
@@ -70,6 +72,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "node-loader": "^2.1.0",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
