@@ -53,8 +53,13 @@ const getStatusDotStyle = (status: string) => {
 const getStatusDisplayText = (status: string) => {
   const statusMap: Record<string, string> = {
     active: "Publicado",
+    published: "Publicado",
     draft: "Rascunho",
     inactive: "Inativo",
+    waiting_list: "Lista de Espera",
+    archived: "Arquivado",
+    hidden: "Oculto",
+    deleted: "Excluído",
   }
 
   return statusMap[status] || status

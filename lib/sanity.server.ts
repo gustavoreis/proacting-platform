@@ -292,4 +292,22 @@ export const createTrack = async (
   }
 };
 
+export const updateTrackStatus = async (
+  trackId: string, 
+  status: "active" | "published" | "draft" | "inactive" | "waiting_list" | "archived" | "hidden" | "deleted"
+) => {
+  try {
+    const result = await client
+      .patch(trackId)
+      .set({ status })
+      .commit();
+
+    console.log("✅ Status da track atualizado:", { trackId, status });
+    return result;
+  } catch (error) {
+    console.error("Erro ao atualizar status da track:", error);
+    throw new Error("Falha ao atualizar status da track");
+  }
+};
+
 export default client; 

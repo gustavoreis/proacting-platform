@@ -7,6 +7,12 @@ export { updatePractitionerPhoneAction } from './practitioner/update-phone'
 export { createTrackAction } from './tracks/create-track'
 export { uploadImageAction } from './tracks/upload-image'
 export { createTemplateAction } from './tracks/create-template'
+export { 
+  updateTrackStatusAction, 
+  archiveTrackAction, 
+  hideTrackAction, 
+  deleteTrackAction 
+} from './tracks/update-track-status'
 
 // AI Actions
 export { createJobAction } from './ai/create-job'

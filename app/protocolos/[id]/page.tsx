@@ -29,9 +29,21 @@ import {
   ArrowLeft,
   ExternalLink
 } from "lucide-react"
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { fetchTrackById } from "@/lib/sanity"
 import type { TrackType } from "@/lib/sanity"
 import { toast } from "@/hooks/use-toast"
+import { archiveTrackAction, hideTrackAction, deleteTrackAction } from "@/app/actions"
 import Link from "next/link"
 
 export default function ProtocoloDetalhePage() {
@@ -39,69 +51,112 @@ export default function ProtocoloDetalhePage() {
   const router = useRouter()
   const [protocol, setProtocol] = useState<TrackType | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const protocolId = params?.id as string
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!protocolId) {
-      setError("ID do protocolo não fornecido")
-      setLoading(false)
-      return
-    }
-
-    const loadProtocol = async () => {
-      try {
-        setLoading(true)
-        const data = await fetchTrackById(protocolId)
-        console.log("🔍 Dados do protocolo carregados:", {
-          title: data.title,
-          hasHowItWorksTemplate: !!data.howItWorksTemplate,
-          templateSteps: data.howItWorksTemplate?.steps?.length || 0,
-          hasDirectHowItWorks: !!data.howItWorks,
-          directSteps: data.howItWorks?.length || 0
-        })
-        setProtocol(data)
-      } catch (err) {
-        console.error("Erro ao carregar protocolo:", err)
-        setError("Erro ao carregar protocolo")
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar o protocolo",
-          variant: "destructive"
-        })
-      } finally {
-        setLoading(false)
+    async function loadProtocol() {
+      if (params?.id) {
+        try {
+          const data = await fetchTrackById(params.id as string)
+          setProtocol(data)
+        } catch (error) {
+          console.error("Erro ao carregar protocolo:", error)
+          toast({
+            title: "Erro",
+            description: "Não foi possível carregar o protocolo.",
+            variant: "destructive",
+          })
+        } finally {
+          setLoading(false)
+        }
       }
     }
 
     loadProtocol()
-  }, [protocolId])
+  }, [params?.id])
 
-  const renderAbout = (about: any[]) => {
-    if (!about || !Array.isArray(about)) return null
-
-    return about.map((block, blockIndex) => {
-      if (!block.children) return null
-
-      return block.children.map((child: any, index: number) => {
-        const key = `${block._key || blockIndex}-${index}`
-        
-        switch (block.style) {
-          case "h1":
-            return <h1 className="text-2xl font-bold mb-4" key={key}>{child.text}</h1>
-          case "h2":
-            return <h2 className="text-xl font-semibold mb-3" key={key}>{child.text}</h2>
-          case "h3":
-            return <h3 className="text-lg font-semibold mb-2" key={key}>{child.text}</h3>
-          case "h4":
-            return <h4 className="text-base font-semibold mb-2" key={key}>{child.text}</h4>
-          case "normal":
-          default:
-            return <p className="mb-3 leading-relaxed" key={key}>{child.text}</p>
-        }
+  const handleArchive = async () => {
+    if (!protocol?._id) return
+    
+    setActionLoading("archive")
+    try {
+      const result = await archiveTrackAction(protocol._id)
+      
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Protocolo arquivado com sucesso.",
+        })
+        router.push("/protocolos")
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Erro ao arquivar protocolo:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível arquivar o protocolo.",
+        variant: "destructive",
       })
-    })
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleHide = async () => {
+    if (!protocol?._id) return
+    
+    setActionLoading("hide")
+    try {
+      const result = await hideTrackAction(protocol._id)
+      
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Protocolo ocultado com sucesso.",
+        })
+        router.push("/protocolos")
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Erro ao ocultar protocolo:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível ocultar o protocolo.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!protocol?._id) return
+    
+    setActionLoading("delete")
+    try {
+      const result = await deleteTrackAction(protocol._id)
+      
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Protocolo excluído com sucesso.",
+        })
+        router.push("/protocolos")
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir protocolo:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o protocolo.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   if (loading) {
@@ -110,11 +165,8 @@ export default function ProtocoloDetalhePage() {
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <div className="flex items-center justify-center min-h-screen">
-              <div className="text-center space-y-2">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground">Carregando protocolo...</p>
-              </div>
+            <div className="flex items-center justify-center h-64">
+              <p>Carregando protocolo...</p>
             </div>
           </SidebarInset>
         </SidebarProvider>
@@ -122,19 +174,14 @@ export default function ProtocoloDetalhePage() {
     )
   }
 
-  if (error || !protocol) {
+  if (!protocol) {
     return (
       <AuthGuard>
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <div className="flex items-center justify-center min-h-screen">
-              <div className="text-center space-y-4">
-                <p className="text-destructive">{error || "Protocolo não encontrado"}</p>
-                <Button asChild>
-                  <Link href="/protocolos">Voltar para protocolos</Link>
-                </Button>
-              </div>
+            <div className="flex items-center justify-center h-64">
+              <p>Protocolo não encontrado.</p>
             </div>
           </SidebarInset>
         </SidebarProvider>
@@ -147,28 +194,28 @@ export default function ProtocoloDetalhePage() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          {/* Header */}
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link href="/protocolos">Protocolos</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>{protocol.title}</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
-          </header>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">Gerenciamento</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/protocolos">Protocolos</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{protocol.title}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
 
-          {/* Content */}
           <div className="flex-1 p-6">
             <div className="mb-6">
               <Button variant="ghost" asChild className="mb-4">
@@ -183,61 +230,116 @@ export default function ProtocoloDetalhePage() {
               
               {/* Action buttons */}
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Archive className="h-4 w-4 mr-2" />
-                  Arquivar
-                </Button>
-                <Button variant="outline" size="sm">
-                  <ArchiveX className="h-4 w-4 mr-2" />
-                  Ocultar
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={actionLoading === "archive"}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      {actionLoading === "archive" ? "Arquivando..." : "Arquivar"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Arquivar Protocolo</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja arquivar este protocolo? Ele não ficará mais visível na lista principal, mas pode ser restaurado posteriormente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleArchive}>Arquivar</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={actionLoading === "hide"}>
+                      <ArchiveX className="h-4 w-4 mr-2" />
+                      {actionLoading === "hide" ? "Ocultando..." : "Ocultar"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Ocultar Protocolo</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja ocultar este protocolo? Ele ficará invisível para os usuários, mas pode ser reativado posteriormente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleHide}>Ocultar</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={actionLoading === "delete"}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {actionLoading === "delete" ? "Excluindo..." : "Excluir"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir Protocolo</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja excluir este protocolo? Esta ação não pode ser desfeita e todos os dados associados serão perdidos permanentemente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Excluir Permanentemente
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
 
             {/* Tabs */}
-            <Tabs defaultValue="general" className="w-full">
-              <TabsList className="grid grid-cols-5 w-full">
-                <TabsTrigger value="general">Geral</TabsTrigger>
-                <TabsTrigger value="howItWorks">Como Funciona</TabsTrigger>
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview">Visão Geral</TabsTrigger>
                 <TabsTrigger value="faq">FAQ</TabsTrigger>
                 <TabsTrigger value="sources">Fontes</TabsTrigger>
                 <TabsTrigger value="biomarkers">Biomarcadores</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="general" className="mt-6">
-                <div className="prose prose-sm max-w-none">
-                  {protocol.about && renderAbout(protocol.about)}
-                </div>
-              </TabsContent>
+              <TabsContent value="overview" className="mt-6">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-3">Sobre este protocolo</h2>
+                    <div className="prose prose-sm max-w-none">
+                      {protocol.about?.map((block, index) => (
+                        <p key={index} className="leading-relaxed">
+                          {block.children?.map((child) => child.text).join("")}
+                        </p>
+                      )) || <p className="text-muted-foreground">Nenhuma descrição disponível.</p>}
+                    </div>
+                  </div>
 
-              <TabsContent value="howItWorks" className="mt-6">
-                <div className="space-y-4">
-                  {(() => {
-                    // Prioriza o template, mas também verifica o campo direto para compatibilidade
-                    const steps = protocol.howItWorksTemplate?.steps || protocol.howItWorks;
-                    
-                    if (!steps || steps.length === 0) {
-                      return <p className="text-muted-foreground">Nenhuma informação disponível.</p>;
-                    }
-
-                    return steps.map((step: any, index: number) => (
-                      <div key={step._key || index} className="border rounded-lg p-4">
-                        <h3 className="font-semibold mb-2">
-                          {step.order || index + 1}. {step.title}
-                        </h3>
-                        {step.subTitle && (
-                          <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                            {step.subTitle}
-                          </h4>
-                        )}
-                        <p className="text-sm leading-relaxed">{step.description}</p>
+                  {protocol.howItWorksTemplate && (
+                    <div>
+                      <h2 className="text-xl font-semibold mb-3">Como funciona</h2>
+                      <div className="space-y-4">
+                        {protocol.howItWorksTemplate.steps?.map((step, index) => (
+                          <div key={step._key} className="border rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <h3 className="font-semibold mb-1">{step.title}</h3>
+                                <p className="text-sm text-muted-foreground mb-2">{step.subTitle}</p>
+                                <p className="text-sm leading-relaxed">{step.description}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )) || <p className="text-muted-foreground">Nenhuma etapa disponível.</p>}
                       </div>
-                    ));
-                  })()}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
