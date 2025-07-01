@@ -8,14 +8,10 @@ import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/AuthContext"
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Atendimentos",
@@ -73,6 +69,15 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  // Dados padrão caso o usuário não esteja carregado ainda
+  const userData = {
+    name: user?.name || "Usuário",
+    email: user?.email || "email@example.com",
+    avatar: user?.avatar || "/placeholder-user.jpg",
+  }
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -83,7 +88,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.supportItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
