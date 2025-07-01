@@ -53,9 +53,9 @@ const getStatusDotStyle = (status: string) => {
 // Map status to display text
 const getStatusDisplayText = (status: string) => {
   const statusMap: Record<string, string> = {
-    active: "Published",
-    draft: "Draft",
-    inactive: "Inactive",
+    active: "Publicado",
+    draft: "Rascunho",
+    inactive: "Inativo",
   }
 
   return statusMap[status] || status

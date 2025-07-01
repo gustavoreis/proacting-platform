@@ -72,9 +72,9 @@ const getStatusDotStyle = (status: string) => {
 // Map status to display text
 const getStatusDisplayText = (status: string) => {
   const statusMap: Record<string, string> = {
-    active: "Published",
-    draft: "Draft",
-    inactive: "Inactive",
+    active: "Publicado",
+    draft: "Rascunho",
+    inactive: "Inativo",
   }
 
   return statusMap[status] || status
@@ -306,9 +306,9 @@ export function ProtocolDetailDrawer({ protocol, onClose }: ProtocolDetailDrawer
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">Published</SelectItem>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="active">Publicado</SelectItem>
+                        <SelectItem value="draft">Rascunho</SelectItem>
+                        <SelectItem value="inactive">Inativo</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (

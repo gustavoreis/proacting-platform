@@ -97,7 +97,7 @@ export default function ProtocolosPage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">Service Management</BreadcrumbLink>
+                  <BreadcrumbLink href="#">Gerenciamento</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
