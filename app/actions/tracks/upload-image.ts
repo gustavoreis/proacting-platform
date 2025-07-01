@@ -1,6 +1,6 @@
 "use server"
 
-import { uploadDefaultImage } from "@/lib/sanity"
+import { uploadDefaultImage } from "@/lib/sanity.server"
 
 export async function uploadImageAction() {
   try {

@@ -1,12 +1,11 @@
 "use server"
 
-import { createOrGetHowItWorksTemplate } from "@/lib/sanity"
+import { createOrGetHowItWorksTemplate } from "@/lib/sanity.server"
 
 type CreateTrackInput = {
   title: string
   shortDescription: string
   practitionerId: string
-  status: string
   about: {
     _type: "block"
     style: string

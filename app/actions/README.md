@@ -11,10 +11,14 @@ app/actions/
 │   ├── create-practitioner.ts
 │   ├── update-practitioner.ts
 │   └── update-phone.ts
-└── tracks/                       # Domínio: Trilhas
-    ├── create-track.ts
-    ├── create-template.ts
-    └── upload-image.ts
+├── tracks/                       # Domínio: Trilhas
+│   ├── create-track.ts
+│   ├── create-template.ts
+│   └── upload-image.ts
+└── ai/                           # Domínio: Inteligência Artificial
+    ├── create-job.ts
+    ├── get-job-status.ts
+    └── create-track-from-job.ts
 ```
 
 ## Como Usar
@@ -48,6 +52,11 @@ import { updatePractitionerAction, createTrackAction } from '@/app/actions'
 - **create-track:** Criação de trilhas completas
 - **upload-image:** Upload de imagens padrão para trilhas
 - **create-template:** Criação de templates "Como Funciona"
+
+### AI (Inteligência Artificial)
+- **create-job:** Criação de jobs de geração de trilhas via IA
+- **get-job-status:** Verificação do status de processamento do job
+- **create-track-from-job:** Criação de trilha a partir do resultado da IA
 
 ## Padrão de Retorno
 

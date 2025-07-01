@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { AuthGuard } from "@/components/auth-guard"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
@@ -60,6 +61,14 @@ export default function ProtocolosPage() {
   }
 
   const handleProtocolClick = (protocolId: string) => {
+    // Se o ID não começar com "PROT-", é um protocolo real do Sanity
+    // Redireciona para página específica
+    if (!protocolId.startsWith("PROT-")) {
+      router.push(`/protocolos/${protocolId}`)
+      return
+    }
+
+    // Para protocolos mock, usa o drawer
     setSelectedProtocolId(protocolId)
     // Update URL with protocol ID parameter
     const newSearchParams = new URLSearchParams(searchParams.toString())
@@ -124,9 +133,11 @@ export default function ProtocolosPage() {
                   <List className="h-4 w-4" />
                 </ToggleGroupItem>
               </ToggleGroup>
-              <Button variant="secondary">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Protocolo
+              <Button variant="secondary" asChild>
+                <Link href="/protocolos/novo">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Protocolo
+                </Link>
               </Button>
             </div>
           </div>

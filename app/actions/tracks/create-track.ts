@@ -1,12 +1,11 @@
 "use server"
 
-import { createTrack } from "@/lib/sanity"
+import { createTrack } from "@/lib/sanity.server"
 
 type CreateTrackInput = {
   title: string
   shortDescription: string
   practitionerId: string
-  status: string
   about: {
     _type: "block"
     style: string
@@ -40,8 +39,8 @@ type CreateTrackInput = {
 
 export async function createTrackAction(data: CreateTrackInput) {
   try {
-    const result = await createTrack(data)
-    return { success: true, data: result }
+    const trackId = await createTrack(data)
+    return { success: true, data: { trackId } }
   } catch (error) {
     console.error("Server Action Error - Create Track:", error)
     return { 
