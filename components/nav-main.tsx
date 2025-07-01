@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { ChevronRight, type LucideIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge" // Import Badge
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -29,6 +30,8 @@ export function NavMain({
     badgeText?: string // Added badgeText property
   }[]
 }) {
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platforma</SidebarGroupLabel>
@@ -67,32 +70,59 @@ export function NavMain({
             )
           }
 
-          // If item has subitems, render as collapsible
+          // If item has subitems, render with hover behavior and smooth animations
+          const isHovered = hoveredItem === item.title
+          
           return (
-            <Collapsible key={item.title} asChild defaultOpen={item.isActive} className="group/collapsible">
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
-                          <a href={subItem.url}>
-                            <span>{subItem.title}</span>
-                          </a>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
+            <div key={item.title} className="transition-all duration-200 ease-in-out">
+              <Collapsible 
+                asChild 
+                open={isHovered}
+                className="group/collapsible"
+              >
+                <SidebarMenuItem
+                  onMouseEnter={() => setHoveredItem(item.title)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  className="transition-all duration-200 ease-in-out"
+                >
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton 
+                      tooltip={item.title} 
+                      isActive={item.isActive}
+                      asChild
+                      className="transition-all duration-200 ease-in-out"
+                    >
+                      <a 
+                        href={item.url}
+                        onClick={(e) => {
+                          // Prevent the collapsible trigger from interfering
+                          e.stopPropagation()
+                          // Let the default navigation behavior happen
+                        }}
+                        className="transition-all duration-200 ease-in-out"
+                      >
+                        {item.icon && <item.icon />}
+                        <span>{item.title}</span>
+                        <ChevronRight className="ml-auto transition-all duration-300 ease-in-out group-data-[state=open]/collapsible:rotate-90" />
+                      </a>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="transition-all duration-300 ease-in-out data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
+                    <SidebarMenuSub className="transition-all duration-200 ease-in-out">
+                      {item.items?.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title} className="transition-all duration-150 ease-in-out">
+                          <SidebarMenuSubButton asChild className="transition-all duration-150 ease-in-out hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                            <a href={subItem.url}>
+                              <span>{subItem.title}</span>
+                            </a>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            </div>
           )
         })}
       </SidebarMenu>
