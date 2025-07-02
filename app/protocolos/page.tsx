@@ -62,14 +62,7 @@ export default function ProtocolosPage() {
   }
 
   const handleProtocolClick = (protocolId: string) => {
-    // Se o ID não começar com "PROT-", é um protocolo real do Sanity
-    // Redireciona para página específica
-    if (!protocolId.startsWith("PROT-")) {
-      router.push(`/protocolos/${protocolId}`)
-      return
-    }
-
-    // Para protocolos mock, usa o drawer
+    // Usar drawer para todos os protocolos
     setSelectedProtocolId(protocolId)
     // Update URL with protocol ID parameter
     const newSearchParams = new URLSearchParams(searchParams.toString())

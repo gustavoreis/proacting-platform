@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,17 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   X,
   TestTube,
@@ -21,13 +33,20 @@ import {
   HelpCircle,
   Workflow,
   BookOpen,
+  Archive,
+  ArchiveX,
+  EyeOff,
+  Activity,
 } from "lucide-react"
 import Image from "next/image"
 import type { Protocol, Biomarker, FAQ, HowItWorksStep } from "@/types/protocol"
+import type { TrackType } from "@/lib/sanity"
+import { archiveTrackAction, hideTrackAction, deleteTrackAction } from "@/app/actions"
+import { toast } from "@/hooks/use-toast"
 import type React from "react"
 
 interface ProtocolDetailDrawerProps {
-  protocol: Protocol
+  protocol: Protocol | TrackType
   onClose: () => void
 }
 
@@ -90,11 +109,47 @@ const formatPriceRange = (priceRange: { min: number; max: number }) => {
   return `R$ ${priceRange.min} - ${priceRange.max}`
 }
 
-export function ProtocolDetailDrawer({ protocol, onClose }: ProtocolDetailDrawerProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editedProtocol, setEditedProtocol] = useState<Protocol>(protocol)
+// Função para converter TrackType para Protocol
+const normalizeProtocol = (protocol: Protocol | TrackType): Protocol => {
+  // Se já é um Protocol (mock), retorna como está
+  if ('category' in protocol) {
+    return protocol as Protocol
+  }
+  
+  // Se é TrackType (Sanity), converte para Protocol
+  const track = protocol as TrackType
+  return {
+    id: track._id,
+    name: track.title,
+    category: "Geral", // Valor padrão, pode ser customizado
+    description: track.description || track.shortDescription,
+    shortDescription: track.shortDescription,
+    status: track.status as any,
+    tests: track.biomarkers?.length || 0,
+    duration: "30 dias", // Valor padrão
+    priceRange: { min: 200, max: 500 }, // Valores padrão
+    icon: Activity, // Ícone padrão
+    color: "blue", // Cor padrão
+    biomarkers: track.biomarkers,
+    faq: track.faq,
+    howItWorks: track.howItWorks,
+    about: undefined, // Remover por incompatibilidade de tipos
+    sources: undefined // Remover por incompatibilidade de tipos
+  }
+}
 
-  const protocolImage = getProtocolImage(protocol.id)
+export function ProtocolDetailDrawer({ protocol, onClose }: ProtocolDetailDrawerProps) {
+  const router = useRouter()
+  const [isEditing, setIsEditing] = useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  
+  const normalizedProtocol = normalizeProtocol(protocol)
+  const [editedProtocol, setEditedProtocol] = useState<Protocol>(normalizedProtocol)
+  
+  // Verifica se é um protocolo real do Sanity (tem _id)
+  const isRealProtocol = '_id' in protocol
+
+  const protocolImage = getProtocolImage(normalizedProtocol.id)
   const categoryBadgeStyle = getCategoryBadgeStyle(editedProtocol.category)
   const statusDotStyle = getStatusDotStyle(editedProtocol.status)
   const statusDisplayText = getStatusDisplayText(editedProtocol.status)
@@ -107,8 +162,95 @@ export function ProtocolDetailDrawer({ protocol, onClose }: ProtocolDetailDrawer
   }
 
   const handleCancel = () => {
-    setEditedProtocol(protocol)
+    setEditedProtocol(normalizedProtocol)
     setIsEditing(false)
+  }
+
+  const handleArchive = async () => {
+    if (!isRealProtocol) return
+    
+    setActionLoading("archive")
+    try {
+      const result = await archiveTrackAction((protocol as TrackType)._id)
+      
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Protocolo arquivado com sucesso.",
+        })
+        onClose()
+        router.push("/protocolos")
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Erro ao arquivar protocolo:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível arquivar o protocolo.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleHide = async () => {
+    if (!isRealProtocol) return
+    
+    setActionLoading("hide")
+    try {
+      const result = await hideTrackAction((protocol as TrackType)._id)
+      
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Protocolo ocultado com sucesso.",
+        })
+        onClose()
+        router.push("/protocolos")
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Erro ao ocultar protocolo:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível ocultar o protocolo.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!isRealProtocol) return
+    
+    setActionLoading("delete")
+    try {
+      const result = await deleteTrackAction((protocol as TrackType)._id)
+      
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Protocolo excluído com sucesso.",
+        })
+        onClose()
+        router.push("/protocolos")
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir protocolo:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o protocolo.",
+        variant: "destructive",
+      })
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   const addBiomarker = () => {
@@ -255,10 +397,80 @@ export function ProtocolDetailDrawer({ protocol, onClose }: ProtocolDetailDrawer
                 </Button>
               </>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                <Edit3 className="h-4 w-4 mr-2" />
-                Editar
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                  <Edit3 className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                {isRealProtocol && (
+                  <>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={actionLoading === "archive"}>
+                          <Archive className="h-4 w-4 mr-2" />
+                          Arquivar
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Arquivar protocolo</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja arquivar este protocolo? Ele ficará oculto dos usuários mas poderá ser restaurado posteriormente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleArchive}>Arquivar</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={actionLoading === "hide"}>
+                          <EyeOff className="h-4 w-4 mr-2" />
+                          Ocultar
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Ocultar protocolo</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja ocultar este protocolo? Ele ficará invisível aos usuários.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleHide}>Ocultar</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" disabled={actionLoading === "delete"}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Excluir
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir protocolo</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir este protocolo? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                )}
+              </>
             )}
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
