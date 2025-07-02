@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
 import { AuthGuard } from "@/components/auth-guard"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
@@ -24,6 +23,7 @@ import { Grid3X3, List, Search, Plus } from "lucide-react"
 import { ProtocolCard } from "@/components/protocols/protocol-card"
 import { ProtocolListItem } from "@/components/protocols/protocol-list-item"
 import { ProtocolDetailDrawer } from "@/components/protocols/protocol-detail-drawer"
+import { ProtocolCreateDrawer } from "@/components/protocols/protocol-create-drawer"
 import { useProtocols } from "@/hooks/use-protocols"
 
 type ViewMode = "grid" | "list"
@@ -34,6 +34,7 @@ export default function ProtocolosPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedProtocolId, setSelectedProtocolId] = useState<string | null>(null)
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false)
   const { protocols, filterProtocols, getProtocolById } = useProtocols()
 
   const filteredProtocols = useMemo(() => 
@@ -85,6 +86,14 @@ export default function ProtocolosPage() {
     router.push(newUrl, { scroll: false })
   }
 
+  const handleOpenCreateDrawer = () => {
+    setShowCreateDrawer(true)
+  }
+
+  const handleCloseCreateDrawer = () => {
+    setShowCreateDrawer(false)
+  }
+
   return (
     <AuthGuard>
       <SidebarProvider>
@@ -133,11 +142,9 @@ export default function ProtocolosPage() {
                   <List className="h-4 w-4" />
                 </ToggleGroupItem>
               </ToggleGroup>
-              <Button variant="secondary" asChild>
-                <Link href="/protocolos/novo">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Protocolo
-                </Link>
+              <Button variant="secondary" onClick={handleOpenCreateDrawer}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Protocolo
               </Button>
             </div>
           </div>
@@ -164,6 +171,9 @@ export default function ProtocolosPage() {
 
         {/* Protocol Detail Drawer - Fixed overlay */}
         {selectedProtocol && <ProtocolDetailDrawer protocol={selectedProtocol} onClose={handleCloseDrawer} />}
+        
+        {/* Protocol Create Drawer - Fixed overlay */}
+        {showCreateDrawer && <ProtocolCreateDrawer onClose={handleCloseCreateDrawer} />}
       </SidebarInset>
     </SidebarProvider>
     </AuthGuard>
