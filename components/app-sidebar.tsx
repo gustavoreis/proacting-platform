@@ -71,9 +71,11 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
 
+  console.log(user)
+
   // Dados padrão caso o usuário não esteja carregado ainda
   const userData = {
-    name: user?.name || "Usuário",
+    name: user?.user_name || "Usuário",
     email: user?.email || "email@example.com",
     avatar: user?.avatar || "/placeholder-user.jpg",
   }
